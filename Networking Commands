@@ -1,0 +1,12 @@
+Networking commands
+
+ipconfig
+ipconfig /all
+ping google.com
+tracert google.com
+nslookup facebook.com
+netstat -an
+arp -a
+hostname
+route print
+taskkill /pid <pid> /f
