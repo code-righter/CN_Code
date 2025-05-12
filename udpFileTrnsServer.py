@@ -1,7 +1,7 @@
 import socket
 
 # Server settings
-host = '0.0.0.0'
+host = 'localhost'
 port = 12345
 buffer_size = 65535  # Max size for UDP
 

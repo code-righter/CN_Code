@@ -4,7 +4,7 @@ import os
 # Server settings
 server_ip = '127.0.0.1'  # change this to the receiver's IP
 server_port = 12345
-buffer_size = 65535
+buffer_size = 6553500
 
 # File to send (change file path as needed)
 filename = input("Enter the name of the file to send (with extension): ")
