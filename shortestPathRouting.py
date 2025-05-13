@@ -1,52 +1,105 @@
-import heapq
+def input_graph():
+    graph = {}
+    num_nodes = int(input("Enter number of nodes: "))
+    print("Enter node names:")
+    nodes = [input(f"Node {i + 1}: ").strip() for i in range(num_nodes)]
 
-# Function to get the graph from user
-def get_network_graph():
-    nodes = int(input("Enter number of routers/nodes: "))
-    graph = {i: {} for i in range(nodes)}
+    print("\nEnter the edges and weights between the nodes:")
+    for node in nodes:
+        graph[node] = {}
+        for neighbor in nodes:
+            if neighbor != node:
+                weight = input(f"Weight from {node} to {neighbor} (enter -1 if no edge): ")
+                try:
+                    weight = int(weight)
+                except ValueError:
+                    weight = -1
+                if weight != -1:
+                    graph[node][neighbor] = weight
+    return graph
 
-    print("\nEnter the adjacency matrix (enter 0 for no direct connection):")
-    for i in range(nodes):
-        for j in range(nodes):
-            cost = int(input(f"Cost from node {i} to node {j}: "))
-            if cost != 0:
-                graph[i][j] = cost
-    return graph, nodes
 
-# Function to display routing table
-def display_routing_table(distances, source):
-    print(f"\nRouting Table for Router {source}:")
-    print("Destination\tCost")
-    for dest in sorted(distances.keys()):
-        print(f"{dest}\t\t{distances[dest]}")
-
-# Function to perform Dijkstra’s Algorithm
-def dijkstra(graph, source):
+def shortest_path(graph, source, destination):
+    visited = set()
     distances = {node: float('inf') for node in graph}
     distances[source] = 0
+    predecessors = {}
 
-    priority_queue = [(0, source)]
-    while priority_queue:
-        curr_dist, curr_node = heapq.heappop(priority_queue)
+    while len(visited) < len(graph):
+        current_node = None
+        min_distance = float('inf')
+        for node in graph:
+            if distances[node] < min_distance and node not in visited:
+                min_distance = distances[node]
+                current_node = node
 
-        if curr_dist > distances[curr_node]:
-            continue
+        if current_node is None:
+            break
 
-        for neighbor, weight in graph[curr_node].items():
-            distance = curr_dist + weight
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
-                heapq.heappush(priority_queue, (distance, neighbor))
+        visited.add(current_node)
 
-    return distances
+        for neighbor, weight in graph[current_node].items():
+            if distances[current_node] + weight < distances[neighbor]:
+                distances[neighbor] = distances[current_node] + weight
+                predecessors[neighbor] = current_node
 
-# Main function to simulate routing
+    path = []
+    current_node = destination
+    while current_node != source:
+        if current_node not in predecessors:
+            return None  # No path found
+        path.insert(0, current_node)
+        current_node = predecessors[current_node]
+    path.insert(0, source)
+    return path
+
+
+def discover_route(graph, route_table, source, destination):
+    if source not in route_table:
+        route_table[source] = {}
+
+    if destination not in route_table[source]:
+        path = shortest_path(graph, source, destination)
+        if path:
+            route_table[source][destination] = path
+        else:
+            return None
+
+    return route_table[source][destination]
+
+
 def main():
-    graph, total_nodes = get_network_graph()
-    
-    for source in range(total_nodes):
-        distances = dijkstra(graph, source)
-        display_routing_table(distances, source)
+    graph = input_graph()
+    route_table = {}
+
+    while True:
+        print("\n--- Menu ---")
+        print("1. Find shortest path")
+        print("2. Discover route using AODV")
+        print("3. Exit")
+        choice = input("Enter your choice: ").strip()
+
+        if choice == '1' or choice == '2':
+            source = input("Enter source node: ").strip()
+            destination = input("Enter destination node: ").strip()
+
+            if source not in graph or destination not in graph:
+                print("Invalid source or destination node.")
+                continue
+
+            if choice == '1':
+                path = shortest_path(graph, source, destination)
+                print(f"Shortest path from {source} to {destination}: {path if path else 'No path found'}")
+            else:
+                path = discover_route(graph, route_table, source, destination)
+                print(f"AODV discovered route from {source} to {destination}: {path if path else 'No route found'}")
+
+        elif choice == '3':
+            print("Exiting program.")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
 
 if __name__ == "__main__":
     main()
